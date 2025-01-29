@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:latest
+    container_name: mp3-storage-db
+    environment:
+      - POSTGRES_DB=mp3-storage
+      - POSTGRES_USER=mp3-storage_user
+      - POSTGRES_PASSWORD=mp3-storage_password
+    ports:
+      - '5432:5432'
+    command: postgres
