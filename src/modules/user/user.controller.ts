@@ -1,14 +1,16 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from '@prisma/client';
+import { ActiveUserResponseDTO, PublicUserResponseDTO } from './dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('user-by-id/:id')
-  async getUser(@Param('id') id: string): Promise<null | User> {
-    return this.userService.user({ id: Number(id) });
+  async getUser(
+    @Param('id') id: string,
+  ): Promise<null | PublicUserResponseDTO> {
+    return this.userService.publicUser({ id: Number(id) });
   }
 
   @Get('all-users')
@@ -19,26 +21,15 @@ export class UserController {
       take?: number;
       cursor?: { email: string };
     },
-  ): Promise<User[]> {
+  ): Promise<PublicUserResponseDTO[]> {
     return this.userService.users(params);
-  }
-
-  @Post('create-user')
-  async createUser(
-    @Body()
-    input: {
-      name: string;
-      email: string;
-    },
-  ): Promise<User> {
-    return this.userService.createUser(input);
   }
 
   @Post('update-user/:id')
   async updateUser(
     @Param('id') id: string,
     @Body() input: { name: string; email: string },
-  ): Promise<User> {
+  ): Promise<ActiveUserResponseDTO> {
     return this.userService.updateUser({
       input: input,
       where: { id: Number(id) },
@@ -46,7 +37,7 @@ export class UserController {
   }
 
   @Post('delete/:id')
-  async deleteUser(@Param('id') id: string): Promise<User> {
+  async deleteUser(@Param('id') id: string): Promise<ActiveUserResponseDTO> {
     return this.userService.deleteUser({ id: Number(id) });
   }
 }
