@@ -14,17 +14,77 @@ datasource db {
 }
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+  id           Int     @default(autoincrement()) @id
+  uid          String @unique
+  email        String  @unique
+  nickname     String
+  avatar       String?
+  compositions Composition[]
+  reactions    Reaction[]
+  albums       Album[]
+  playlists    Playlist[]
+  hash         String
+  role         Role     @default(USER)
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Composition {
+  id         Int      @default(autoincrement()) @id
+  uid        String   @unique
+  title      String
+  duration   String
+  poster String
+  audio String
+  published  Boolean? @default(false)
+  authorId   Int?
+  albumId Int?
+  playlistId Int?
+  reactions  Reaction[]
+  author     User?    @relation(fields: [authorId], references: [id])
+  album Album? @relation(fields: [albumId], references: [id])
+  playlist Playlist? @relation(fields: [playlistId], references: [id])
+}
+
+model Reaction {
+  id Int      @default(autoincrement()) @id
+  uid String @unique
+  type ReactionType @default(COMPOSITION)
+  userId Int
+  compositionId Int?
+  playlistId Int?
+  albumId Int?
+  user User @relation(fields: [userId], references: [id])
+  composition Composition? @relation(fields: [compositionId], references: [id])
+  playlist Playlist? @relation(fields: [playlistId], references: [id])
+  album Album? @relation(fields: [albumId], references: [id])
+}
+
+model Playlist {
+  id Int      @default(autoincrement()) @id
+  uid String @unique
+  title String
+  poster String?
+  users User[]
+  reactions Reaction[]
+  compositions Composition[]
+}
+
+model Album {
+  id Int      @default(autoincrement()) @id
+  uid String @unique
+  title String
+  poster String?
+  authors User[]
+  reactions Reaction[]
+  compositions Composition[]
+}
+
+enum Role {
+  USER
+  ARTIST
+  MODERATOR
+}
+
+enum ReactionType {
+  COMPOSITION
+  COLLECTION
 }
