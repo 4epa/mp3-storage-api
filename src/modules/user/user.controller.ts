@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ActiveUserResponseDTO, PublicUserResponseDTO } from './dto';
+import { JWTAuthGuard } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -39,5 +40,11 @@ export class UserController {
   @Post('delete/:id')
   async deleteUser(@Param('id') id: string): Promise<ActiveUserResponseDTO> {
     return this.userService.deleteUser({ id: Number(id) });
+  }
+
+  @Get('test')
+  @UseGuards(JWTAuthGuard)
+  async test() {
+    return true;
   }
 }
