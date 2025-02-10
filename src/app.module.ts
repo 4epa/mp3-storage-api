@@ -10,8 +10,11 @@ import { TokenModule } from './modules/token/token.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { TokenService } from './modules/token/token.service';
 import { AuthService } from './modules/auth/auth.service';
+import { TrackModule } from './modules/track/track.module';
+import { TrackController } from './modules/track/track.controller';
+import { TrackService } from './modules/track/track.service';
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -31,8 +34,10 @@ import { AuthService } from './modules/auth/auth.service';
     UserModule,
     AuthModule,
     TokenModule,
+    TrackModule,
+    FileModule,
   ],
-  controllers: [AppController, UserController],
-  providers: [AppService, UserService, AuthService, JwtStrategy],
+  controllers: [AppController, UserController, TrackController],
+  providers: [AppService, UserService, TrackService, AuthService, JwtStrategy],
 })
 export class AppModule {}

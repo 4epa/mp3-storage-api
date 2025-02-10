@@ -33,7 +33,7 @@ model Track {
   id         Int      @default(autoincrement()) @id
   uid        String   @unique
   title      String
-  duration   String
+  duration   Int
   poster String
   audio String
   published  Boolean? @default(false)
