@@ -15,19 +15,21 @@ datasource db {
 
 model User {
   id           Int     @default(autoincrement()) @id
-  uid          String @unique
+  uid          String  @unique
   email        String  @unique
-  nickname     String @unique
+  nickname     String  @unique
   avatar       String?
-  compositions Composition[]
+  tracks Track[]
   reactions    Reaction[]
   albums       Album[]
   playlists    Playlist[]
   hash         String
   role         Role     @default(USER)
+  createdAt String
+  updatedAt String
 }
 
-model Composition {
+model Track {
   id         Int      @default(autoincrement()) @id
   uid        String   @unique
   title      String
@@ -42,20 +44,25 @@ model Composition {
   author     User?    @relation(fields: [authorId], references: [id])
   album Album? @relation(fields: [albumId], references: [id])
   playlist Playlist? @relation(fields: [playlistId], references: [id])
+  genres Genre[]
+  createdAt String
+  updatedAt String
 }
 
 model Reaction {
   id Int      @default(autoincrement()) @id
   uid String @unique
-  type ReactionType @default(COMPOSITION)
+  type ReactionType @default(TRACK)
   userId Int
-  compositionId Int?
+  trackId Int?
   playlistId Int?
   albumId Int?
   user User @relation(fields: [userId], references: [id])
-  composition Composition? @relation(fields: [compositionId], references: [id])
+  track Track? @relation(fields: [trackId], references: [id])
   playlist Playlist? @relation(fields: [playlistId], references: [id])
   album Album? @relation(fields: [albumId], references: [id])
+  createdAt String
+  updatedAt String
 }
 
 model Playlist {
@@ -65,7 +72,10 @@ model Playlist {
   poster String?
   users User[]
   reactions Reaction[]
-  compositions Composition[]
+  tracks Track[]
+  genres Genre[]
+  createdAt String
+  updatedAt String
 }
 
 model Album {
@@ -75,7 +85,18 @@ model Album {
   poster String?
   authors User[]
   reactions Reaction[]
-  compositions Composition[]
+  tracks Track[]
+  genres Genre[]
+  createdAt String
+  updatedAt String
+}
+
+model Genre {
+  id     Int   @default(autoincrement()) @id
+  name   String   @unique()
+  tracks Track[]
+  albums Album[]
+  playlists Playlist[]
 }
 
 enum Role {
@@ -85,6 +106,6 @@ enum Role {
 }
 
 enum ReactionType {
-  COMPOSITION
+  TRACK
   COLLECTION
 }

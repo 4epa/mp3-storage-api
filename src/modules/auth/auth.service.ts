@@ -29,12 +29,17 @@ export class AuthService {
 
     const uid = generateUUID();
     const hash = await hashPassword(data.password);
+    const date = new Date();
+
+    const createdAt = date.toISOString();
 
     const activeUser = await this.userService.createUser({
       email: data.email,
       nickname: data.nickname,
       hash: hash,
       uid: uid,
+      createdAt: createdAt,
+      updatedAt: createdAt,
     });
     const token = await this.tokenService.generateJwtToken(activeUser);
     return { activeUser, token };
