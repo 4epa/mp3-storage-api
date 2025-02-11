@@ -1,9 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  UnauthorizedException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTrackDTO } from './dto';
+import { CreateTrackDTO, DeleteTrackDTO } from './dto';
 import { FileService } from '../file/file.service';
 import { generateUUID } from 'src/utils/generateUUID';
 import { getMetadata } from 'src/utils/GetMetadata';
+import { Prisma, Track } from '@prisma/client';
+import { ERRORS } from './errors';
 
 @Injectable()
 export class TrackService {
@@ -12,7 +18,15 @@ export class TrackService {
     private readonly fileService: FileService,
   ) {}
 
-  async createTrack(data: CreateTrackDTO) {
+  async track(
+    trackWhereUniqueInput: Prisma.TrackWhereUniqueInput,
+  ): Promise<null | Track> {
+    return this.prismaService.track.findUnique({
+      where: trackWhereUniqueInput,
+    });
+  }
+
+  async createTrack(data: CreateTrackDTO): Promise<Track> {
     const trackUID = generateUUID();
 
     const audioFileKey = `audio-${data.authorId}-${trackUID}`;
@@ -42,6 +56,24 @@ export class TrackService {
         poster: posterFileKey,
         authorId: data.authorId,
         duration: duration,
+      },
+    });
+  }
+
+  async deleteTrack(data: DeleteTrackDTO) {
+    const existTrack = await this.track({ id: data.trackId });
+
+    if (!existTrack)
+      throw new BadRequestException(ERRORS.noExistTrack(data.trackId));
+
+    if (existTrack.authorId !== data.authorId)
+      throw new UnauthorizedException(ERRORS.wrongAuthor);
+
+    await this.fileService.remove([existTrack.poster, existTrack.audio]);
+
+    return this.prismaService.track.delete({
+      where: {
+        id: data.trackId,
       },
     });
   }

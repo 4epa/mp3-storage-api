@@ -5,3 +5,8 @@ export class CreateTrackDTO {
   authorId: number;
   albumId?: number;
 }
+
+export class DeleteTrackDTO {
+  trackId: number;
+  authorId: number;
+}
