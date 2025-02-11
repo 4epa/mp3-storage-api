@@ -18,24 +18,18 @@ export class TrackService {
     const audioFileKey = `audio-${data.authorId}-${trackUID}`;
     const posterFileKey = `poster-${data.authorId}-${trackUID}`;
 
-    const date = new Date();
+    await this.fileService.upload(
+      data.audio.buffer,
+      audioFileKey,
+      data.audio.mimetype,
+    );
+    await this.fileService.upload(
+      data.poster.buffer,
+      posterFileKey,
+      data.poster.mimetype,
+    );
 
-    const createAt = date.toISOString();
-
-    // await this.fileService.upload(
-    //   data.audio.buffer,
-    //   audioFileKey,
-    //   data.audio.mimetype,
-    // );
-    // await this.fileService.upload(
-    //   data.poster.buffer,
-    //   posterFileKey,
-    //   data.poster.mimetype,
-    // );
-
-    console.log(data.audio);
-
-    const duration = await getMetadata(data.audio.buffer);
+    const duration = (await getMetadata(data.audio.buffer)) as number;
 
     if (!duration)
       throw new BadRequestException('Failed to parse file metadata');
@@ -48,8 +42,6 @@ export class TrackService {
         poster: posterFileKey,
         authorId: data.authorId,
         duration: duration,
-        createdAt: createAt,
-        updatedAt: createAt,
       },
     });
   }
