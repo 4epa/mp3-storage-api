@@ -26,6 +26,16 @@ export class TrackService {
     });
   }
 
+  async tracks(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.TrackWhereUniqueInput;
+    where?: Prisma.TrackWhereInput;
+    orderBy?: Prisma.TrackOrderByWithRelationInput;
+  }) {
+    return this.prismaService.track.findMany({ ...params });
+  }
+
   async checkAuthor(trackId: number, authorId: number): Promise<boolean> {
     const existTrack = await this.track({ id: trackId });
 

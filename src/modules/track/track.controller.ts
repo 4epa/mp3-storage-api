@@ -6,6 +6,7 @@ import {
   Body,
   UseGuards,
   Param,
+  Get,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -14,13 +15,28 @@ import { User } from '@prisma/client';
 import { AuthUser } from '../auth/auth.decorator';
 import { Role } from 'src/guards/decorators/role.decorator';
 import { RoleGuard } from 'src/guards/role.guard';
-import { Reflector } from '@nestjs/core';
 import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
 
 @Controller('track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
+
+  @Get('new')
+  async getNewTracks(
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      limit?: number;
+      cursor?: { id: number };
+    },
+  ) {
+    return this.trackService.tracks({
+      ...params,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 
   @Post('create')
   @Role('ARTIST')
