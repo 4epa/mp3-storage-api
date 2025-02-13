@@ -12,13 +12,19 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
 import { User } from '@prisma/client';
 import { AuthUser } from '../auth/auth.decorator';
+import { Role } from 'src/guards/decorators/role.decorator';
+import { RoleGuard } from 'src/guards/role.guard';
+import { Reflector } from '@nestjs/core';
+import { Content } from 'src/guards/decorators/content.decorator';
+import { AuthorGuard } from 'src/guards/author.guard';
 
 @Controller('track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
   @Post('create')
-  @UseGuards(JWTAuthGuard)
+  @Role('ARTIST')
+  @UseGuards(JWTAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'poster', maxCount: 1 },
@@ -42,7 +48,9 @@ export class TrackController {
   }
 
   @Post('delete/:id')
-  @UseGuards(JWTAuthGuard)
+  @Role('ARTIST')
+  @Content('TRACK')
+  @UseGuards(JWTAuthGuard, RoleGuard, AuthorGuard)
   async deleteTrack(@Param('id') id: string, @AuthUser() user: User) {
     const activeUser = user;
 

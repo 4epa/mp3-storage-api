@@ -26,6 +26,15 @@ export class TrackService {
     });
   }
 
+  async checkAuthor(trackId: number, authorId: number): Promise<boolean> {
+    const existTrack = await this.track({ id: trackId });
+
+    if (existTrack?.authorId !== authorId)
+      throw new UnauthorizedException(ERRORS.wrongAuthor);
+
+    return existTrack?.authorId === authorId;
+  }
+
   async createTrack(data: CreateTrackDTO): Promise<Track> {
     const trackUID = generateUUID();
 
@@ -65,9 +74,6 @@ export class TrackService {
 
     if (!existTrack)
       throw new BadRequestException(ERRORS.noExistTrack(data.trackId));
-
-    if (existTrack.authorId !== data.authorId)
-      throw new UnauthorizedException(ERRORS.wrongAuthor);
 
     await this.fileService.remove([existTrack.poster, existTrack.audio]);
 
