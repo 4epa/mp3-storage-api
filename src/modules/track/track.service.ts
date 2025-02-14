@@ -75,6 +75,9 @@ export class TrackService {
         poster: posterFileKey,
         authorId: data.authorId,
         duration: duration,
+        genres: {
+          connect: data.genresId.map((id) => ({ id: id })),
+        },
       },
     });
   }

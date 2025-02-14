@@ -15,6 +15,9 @@ import { TrackModule } from './modules/track/track.module';
 import { TrackController } from './modules/track/track.controller';
 import { TrackService } from './modules/track/track.service';
 import { FileModule } from './modules/file/file.module';
+import { GenreModule } from './modules/genre/genre.module';
+import { GenreController } from './modules/genre/genre.controller';
+import { GenreService } from './modules/genre/genre.service';
 
 @Module({
   imports: [
@@ -36,8 +39,21 @@ import { FileModule } from './modules/file/file.module';
     TokenModule,
     TrackModule,
     FileModule,
+    GenreModule,
   ],
-  controllers: [AppController, UserController, TrackController],
-  providers: [AppService, UserService, TrackService, AuthService, JwtStrategy],
+  controllers: [
+    AppController,
+    UserController,
+    TrackController,
+    GenreController,
+  ],
+  providers: [
+    AppService,
+    UserService,
+    TrackService,
+    AuthService,
+    JwtStrategy,
+    GenreService,
+  ],
 })
 export class AppModule {}
