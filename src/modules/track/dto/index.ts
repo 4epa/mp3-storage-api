@@ -4,6 +4,7 @@ export class CreateTrackDTO {
   title: string;
   authorId: number;
   albumId?: number;
+  genresId: number[];
 }
 
 export class DeleteTrackDTO {

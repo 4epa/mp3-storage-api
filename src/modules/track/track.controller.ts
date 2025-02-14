@@ -50,14 +50,15 @@ export class TrackController {
   async createTrack(
     @UploadedFiles()
     files: { poster: Express.Multer.File[]; audio: Express.Multer.File[] },
-    @Body() body: { title: string },
+    @Body() body: { title: string; genresId: string },
     @AuthUser() user: User,
   ) {
     const data = {
-      poster: files.poster[0],
-      audio: files.audio[0],
-      title: body.title,
       authorId: user.id,
+      title: body.title,
+      audio: files.audio[0],
+      poster: files.poster[0],
+      genresId: body.genresId.split(',').map((id) => Number(id)) ?? [],
     };
 
     return this.trackService.createTrack(data);
