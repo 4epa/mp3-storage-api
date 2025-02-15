@@ -22,6 +22,28 @@ import { AuthorGuard } from 'src/guards/author.guard';
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
+  @Get('playlist/:id')
+  async getTracksByPlaylist(
+    @Param('id') id: string,
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      limit?: number;
+      cursor?: { id: number };
+    },
+  ) {
+    return this.trackService.tracks({
+      ...params,
+      orderBy: { createdAt: 'desc' },
+      where: {
+        playlist: {
+          some: { id: Number(id) },
+        },
+      },
+    });
+  }
+
   @Get('new')
   async getNewTracks(
     @Body()

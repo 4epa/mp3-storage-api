@@ -18,6 +18,7 @@ import { FileModule } from './modules/file/file.module';
 import { GenreModule } from './modules/genre/genre.module';
 import { GenreController } from './modules/genre/genre.controller';
 import { GenreService } from './modules/genre/genre.service';
+import { PlaylistModule } from './modules/playlist/playlist.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GenreService } from './modules/genre/genre.service';
     TrackModule,
     FileModule,
     GenreModule,
+    PlaylistModule,
   ],
   controllers: [
     AppController,

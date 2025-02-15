@@ -3,10 +3,12 @@ import { TrackController } from './track.controller';
 import { TrackService } from './track.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { FileService } from '../file/file.service';
+import { PlaylistService } from '../playlist/playlist.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [TrackController],
-  providers: [TrackService, FileService],
+  providers: [TrackService, FileService, PlaylistService],
+  exports: [TrackService],
 })
 export class TrackModule {}
