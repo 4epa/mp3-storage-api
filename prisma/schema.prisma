@@ -40,11 +40,10 @@ model Track {
   published  Boolean? @default(false)
   authorId   Int?
   albumId Int?
-  playlistId Int?
   reactions  Reaction[]
   author     User?    @relation(fields: [authorId], references: [id])
   album Album? @relation(fields: [albumId], references: [id])
-  playlist Playlist? @relation(fields: [playlistId], references: [id])
+  playlist Playlist[]
   genres Genre[]
 
   createdAt DateTime @default(now())
@@ -72,8 +71,9 @@ model Playlist {
   id Int      @default(autoincrement()) @id
   uid String @unique
   title String
-  poster String?
-  users User[]
+  poster String
+  authorId Int
+  author     User  @relation(fields: [authorId], references: [id])
   reactions Reaction[]
   tracks Track[]
   genres Genre[]
@@ -87,7 +87,8 @@ model Album {
   uid String @unique
   title String
   poster String?
-  authors User[]
+  authorId Int
+  author     User?    @relation(fields: [authorId], references: [id])
   reactions Reaction[]
   tracks Track[]
   genres Genre[]
