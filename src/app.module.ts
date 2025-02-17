@@ -19,6 +19,9 @@ import { GenreModule } from './modules/genre/genre.module';
 import { GenreController } from './modules/genre/genre.controller';
 import { GenreService } from './modules/genre/genre.service';
 import { PlaylistModule } from './modules/playlist/playlist.module';
+import { AlbumModule } from './modules/album/album.module';
+import { AlbumController } from './modules/album/album.controller';
+import { AlbumService } from './modules/album/album.service';
 
 @Module({
   imports: [
@@ -42,12 +45,14 @@ import { PlaylistModule } from './modules/playlist/playlist.module';
     FileModule,
     GenreModule,
     PlaylistModule,
+    AlbumModule,
   ],
   controllers: [
     AppController,
     UserController,
     TrackController,
     GenreController,
+    AlbumController,
   ],
   providers: [
     AppService,
@@ -56,6 +61,7 @@ import { PlaylistModule } from './modules/playlist/playlist.module';
     AuthService,
     JwtStrategy,
     GenreService,
+    AlbumService,
   ],
 })
 export class AppModule {}
