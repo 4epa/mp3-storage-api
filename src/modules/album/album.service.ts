@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { generateUUID } from 'src/utils/generateUUID';
 import { CreateAlbumDTO } from './dto';
-import { getMetadata } from 'src/utils/GetMetadata';
+import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
 import { FileService } from '../file/file.service';
 import { Prisma } from '@prisma/client';
 import { ERRORS } from './errors';
@@ -60,20 +60,27 @@ export class AlbumService {
       const trackUID = generateUUID();
       const trackFileKey = `audio-${data.authorId}-${trackUID}`;
 
-      const trackDuration = (await getMetadata(audioFile.buffer)) as number;
+      const preprocessedAudio = await preprocessingAudioFile(audioFile.buffer); //(await getMetadata(audioFile.buffer)) as number;
+
+      if (!preprocessedAudio)
+        throw new BadRequestException(
+          `Failed preprocessing audio with name ${audioFile.filename}`,
+        );
 
       await this.fileService.upload(
-        audioFile.buffer,
+        preprocessedAudio.buffer,
         trackFileKey,
         audioFile.mimetype,
       );
+
+      const duration = preprocessedAudio.metadata.duration!;
 
       tracksData.push({
         uid: trackUID,
         title: trackTitle,
         audio: trackFileKey,
         poster: posterFileKey,
-        duration: trackDuration,
+        duration: duration,
         author: { connect: { id: data.authorId } },
         genres: {
           connect: genres.map((id) => ({ id: Number(id) })),
