@@ -36,6 +36,21 @@ export class TrackService {
     return this.prismaService.track.findMany({ ...params });
   }
 
+  async getReactedTracks(data: {
+    userId: number;
+    params: {
+      skip?: number;
+      take?: number;
+      cursor?: Prisma.TrackWhereUniqueInput;
+      orderBy?: Prisma.TrackOrderByWithRelationInput;
+    };
+  }) {
+    return this.prismaService.track.findMany({
+      ...data.params,
+      where: { reactions: { some: { userId: data.userId } } },
+    });
+  }
+
   async checkAuthor(trackId: number, authorId: number): Promise<boolean> {
     const existTrack = await this.track({ id: trackId });
 

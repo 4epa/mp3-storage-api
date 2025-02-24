@@ -23,6 +23,22 @@ export class PlaylistService {
     return this.prismaService.playlist.findMany({ ...params });
   }
 
+  async getReactedPlaylist(data: {
+    userId: number;
+    params: {
+      skip?: number;
+      take?: number;
+      cursor?: Prisma.PlaylistWhereUniqueInput;
+      where?: Prisma.PlaylistWhereInput;
+      orderBy?: Prisma.PlaylistOrderByWithRelationInput;
+    };
+  }) {
+    return this.prismaService.playlist.findMany({
+      ...data.params,
+      where: { reactions: { some: { userId: data.userId } } },
+    });
+  }
+
   async managePlaylistTrack(playlistId: number, trackId: number) {
     const existPlaylist = await this.prismaService.playlist.findFirst({
       where: { id: playlistId },

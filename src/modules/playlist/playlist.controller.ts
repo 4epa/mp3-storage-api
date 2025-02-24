@@ -36,6 +36,21 @@ export class PlaylistController {
     });
   }
 
+  @Get('reacted')
+  @UseGuards(JWTAuthGuard)
+  async getReactedPlaylists(
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      limit?: number;
+      cursor?: { id: number };
+    },
+    @AuthUser() user: User,
+  ) {
+    return this.playlistService.getReactedPlaylist({ userId: user.id, params });
+  }
+
   @Post('create')
   @UseGuards(JWTAuthGuard)
   @UseInterceptors(FileFieldsInterceptor([{ name: 'poster', maxCount: 1 }]))

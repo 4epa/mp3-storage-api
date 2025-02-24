@@ -114,5 +114,6 @@ enum Role {
 
 enum ReactionType {
   TRACK
-  COLLECTION
+  ALBUM
+  PLAYLIST
 }

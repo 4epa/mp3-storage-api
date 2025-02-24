@@ -22,6 +22,9 @@ import { PlaylistModule } from './modules/playlist/playlist.module';
 import { AlbumModule } from './modules/album/album.module';
 import { AlbumController } from './modules/album/album.controller';
 import { AlbumService } from './modules/album/album.service';
+import { ReactionModule } from './modules/reaction/reaction.module';
+import { ReactionService } from './modules/reaction/reaction.service';
+import { ReactionController } from './modules/reaction/reaction.controller';
 
 @Module({
   imports: [
@@ -46,6 +49,7 @@ import { AlbumService } from './modules/album/album.service';
     GenreModule,
     PlaylistModule,
     AlbumModule,
+    ReactionModule,
   ],
   controllers: [
     AppController,
@@ -53,6 +57,7 @@ import { AlbumService } from './modules/album/album.service';
     TrackController,
     GenreController,
     AlbumController,
+    ReactionController,
   ],
   providers: [
     AppService,
@@ -62,6 +67,7 @@ import { AlbumService } from './modules/album/album.service';
     JwtStrategy,
     GenreService,
     AlbumService,
+    ReactionService,
   ],
 })
 export class AppModule {}

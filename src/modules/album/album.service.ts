@@ -22,6 +22,21 @@ export class AlbumService {
     return this.prismaService.album.findMany(param);
   }
 
+  async getReactedAlbums(data: {
+    userId: number;
+    params: {
+      skip?: number;
+      take?: number;
+      cursor?: Prisma.AlbumWhereUniqueInput;
+      orderBy?: Prisma.AlbumOrderByWithRelationInput;
+    };
+  }) {
+    return this.prismaService.album.findMany({
+      ...data.params,
+      where: { reactions: { some: { userId: data.userId } } },
+    });
+  }
+
   async create(data: CreateAlbumDTO) {
     const uid = generateUUID();
 
