@@ -6,6 +6,7 @@ import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
 import { FileService } from '../file/file.service';
 import { Prisma } from '@prisma/client';
 import { ERRORS } from './errors';
+import { preprocessingImageFile } from 'src/utils/sharp/utils';
 
 @Injectable()
 export class AlbumService {
@@ -45,11 +46,17 @@ export class AlbumService {
     const genres = data.genresId.split(',');
 
     const posterFileKey = `poster-${data.authorId}-${uid}`;
+    const preprocessedImage = await preprocessingImageFile(data.poster.buffer);
+
+    if (!preprocessedImage)
+      throw new BadRequestException(
+        `Failed preprocessing image file with name ${data.poster.filename}`,
+      );
 
     await this.fileService.upload(
-      data.poster.buffer,
+      preprocessedImage.buffer,
       posterFileKey,
-      data.poster.mimetype,
+      preprocessedImage.mimetype,
     );
 
     const tracksData: Prisma.TrackCreateWithoutAlbumInput[] = [];
@@ -70,7 +77,7 @@ export class AlbumService {
       await this.fileService.upload(
         preprocessedAudio.buffer,
         trackFileKey,
-        audioFile.mimetype,
+        preprocessedAudio.mimetype,
       );
 
       const duration = preprocessedAudio.metadata.duration!;
