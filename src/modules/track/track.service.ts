@@ -10,6 +10,7 @@ import { generateUUID } from 'src/utils/generateUUID';
 import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
 import { Prisma, Track } from '@prisma/client';
 import { ERRORS } from './errors';
+import { preprocessingImageFile } from 'src/utils/sharp/utils';
 
 @Injectable()
 export class TrackService {
@@ -67,19 +68,23 @@ export class TrackService {
     const posterFileKey = `poster-${data.authorId}-${trackUID}`;
 
     const preprocessedAudio = await preprocessingAudioFile(data.audio.buffer);
+    const preprocessedImage = await preprocessingImageFile(data.poster.buffer);
 
     if (!preprocessedAudio)
       throw new BadRequestException('Failed to preprocessing audio file');
 
+    if (!preprocessedImage)
+      throw new BadRequestException('Failed to preprocessing image file');
+
     await this.fileService.upload(
       preprocessedAudio.buffer,
       audioFileKey,
-      data.audio.mimetype,
+      preprocessedAudio.mimetype,
     );
     await this.fileService.upload(
-      data.poster.buffer,
+      preprocessedImage.buffer,
       posterFileKey,
-      data.poster.mimetype,
+      preprocessedImage.mimetype,
     );
 
     const duration = preprocessedAudio.metadata.duration!;

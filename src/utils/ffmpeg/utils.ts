@@ -45,6 +45,7 @@ export const preprocessingAudioFile = async (buffer: Buffer) => {
     return {
       metadata: metadata,
       buffer: outputBuffer,
+      mimetype: '	audio/mpeg',
     };
   } catch (error) {
     await unlink(inputPath).catch(() => null);
