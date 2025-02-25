@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTrackDTO, DeleteTrackDTO } from './dto';
 import { FileService } from '../file/file.service';
 import { generateUUID } from 'src/utils/generateUUID';
-import { getMetadata } from 'src/utils/GetMetadata';
+import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
 import { Prisma, Track } from '@prisma/client';
 import { ERRORS } from './errors';
 
@@ -66,8 +66,13 @@ export class TrackService {
     const audioFileKey = `audio-${data.authorId}-${trackUID}`;
     const posterFileKey = `poster-${data.authorId}-${trackUID}`;
 
+    const preprocessedAudio = await preprocessingAudioFile(data.audio.buffer);
+
+    if (!preprocessedAudio)
+      throw new BadRequestException('Failed to preprocessing audio file');
+
     await this.fileService.upload(
-      data.audio.buffer,
+      preprocessedAudio.buffer,
       audioFileKey,
       data.audio.mimetype,
     );
@@ -77,10 +82,7 @@ export class TrackService {
       data.poster.mimetype,
     );
 
-    const duration = (await getMetadata(data.audio.buffer)) as number;
-
-    if (!duration)
-      throw new BadRequestException('Failed to parse file metadata');
+    const duration = preprocessedAudio.metadata.duration!;
 
     return this.prismaService.track.create({
       data: {
