@@ -38,6 +38,24 @@ export class TrackController {
     });
   }
 
+  @Get('reacted')
+  @UseGuards(JWTAuthGuard)
+  async getReactedTracks(
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      limit?: number;
+      cursor?: { id: number };
+    },
+    @AuthUser() user: User,
+  ) {
+    return this.trackService.getReactedTracks({
+      userId: user.id,
+      params: params,
+    });
+  }
+
   @Get('playlist/:id')
   async getTracksByPlaylist(
     @Param('id') id: string,

@@ -38,12 +38,27 @@ export class AlbumController {
     });
   }
 
-  @Get('album-by-uid/:uid')
+  @Get('reacted')
+  @UseGuards(JWTAuthGuard)
+  async getReactedAlbums(
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      limit?: number;
+      cursor?: { id: number };
+    },
+    @AuthUser() user: User,
+  ) {
+    return this.albumService.getReactedAlbums({ userId: user.id, params });
+  }
+
+  @Get('by-uid/:uid')
   async getAlbumByUID(@Param('uid') uid: string) {
     return this.albumService.album({ where: { uid: uid } });
   }
 
-  @Get('album-by-author/:id')
+  @Get('by-author/:id')
   async getAuthorAlbums(
     @Param('id')
     id: string,
