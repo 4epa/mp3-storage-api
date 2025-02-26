@@ -1,13 +1,9 @@
-export class CreateTrackDTO {
-  poster: Express.Multer.File;
-  audio: Express.Multer.File;
-  title: string;
-  authorId: number;
-  albumId?: number;
-  genresId: number[];
-}
+import { IsString } from 'class-validator';
 
-export class DeleteTrackDTO {
-  trackId: number;
-  authorId: number;
+export class CreateTrackDTO {
+  @IsString()
+  title: string;
+
+  @IsString()
+  genresId: string;
 }

@@ -7,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   Get,
+  Query,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
@@ -17,6 +18,8 @@ import { User } from '@prisma/client';
 import { AlbumService } from './album.service';
 import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
+import { CreateAlbumDTO } from './dto';
+import { ParseFilesPipe } from './validation';
 
 @Controller('album')
 export class AlbumController {
@@ -24,16 +27,14 @@ export class AlbumController {
 
   @Get('new')
   async getNewAlbums(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.albumService.albums({
-      ...params,
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -41,16 +42,19 @@ export class AlbumController {
   @Get('reacted')
   @UseGuards(JWTAuthGuard)
   async getReactedAlbums(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
     @AuthUser() user: User,
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
-    return this.albumService.getReactedAlbums({ userId: user.id, params });
+    return this.albumService.getReactedAlbums({
+      userId: user.id,
+      params: {
+        take: take,
+        skip: skip,
+        cursor: { id: cursorId },
+      },
+    });
   }
 
   @Get('by-uid/:uid')
@@ -62,16 +66,14 @@ export class AlbumController {
   async getAuthorAlbums(
     @Param('id')
     id: string,
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.albumService.albums({
-      ...params,
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
       where: { authorId: Number(id) },
       orderBy: { createdAt: 'desc' },
     });
@@ -81,13 +83,16 @@ export class AlbumController {
   @Role('ARTIST')
   @UseGuards(JWTAuthGuard, RoleGuard)
   @UseInterceptors(
-    FileFieldsInterceptor([{ name: 'poster' }, { name: 'audios' }]),
+    FileFieldsInterceptor([
+      { name: 'poster', maxCount: 1 },
+      { name: 'audios', maxCount: 20 },
+    ]),
   )
   async createAlbum(
-    @UploadedFiles()
-    files: { poster: Express.Multer.File[]; audios: Express.Multer.File[] },
-    @Body() body: { title: string; trackTitles: string; genresId: string },
+    @Body() body: CreateAlbumDTO,
     @AuthUser() user: User,
+    @UploadedFiles(new ParseFilesPipe())
+    files: { poster: Express.Multer.File[]; audios: Express.Multer.File[] },
   ) {
     return this.albumService.create({
       title: body.title,

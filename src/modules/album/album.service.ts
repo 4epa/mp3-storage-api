@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { generateUUID } from 'src/utils/generateUUID';
-import { CreateAlbumDTO } from './dto';
 import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
 import { FileService } from '../file/file.service';
 import { Prisma } from '@prisma/client';
@@ -38,7 +37,14 @@ export class AlbumService {
     });
   }
 
-  async create(data: CreateAlbumDTO) {
+  async create(data: {
+    title: string;
+    trackTitles: string;
+    genresId: string;
+    authorId: number;
+    poster: Express.Multer.File;
+    trackAudios: Express.Multer.File[];
+  }) {
     const uid = generateUUID();
 
     const trackAudios = data.trackAudios;

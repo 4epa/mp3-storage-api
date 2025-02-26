@@ -1,12 +1,15 @@
 import {
   Controller,
-  UploadedFiles,
   Body,
   Post,
   UseGuards,
   Param,
   Get,
   UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  Query,
 } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { AuthUser } from '../auth/auth.decorator';
@@ -14,7 +17,8 @@ import { User } from '@prisma/client';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
 import { AuthorGuard } from 'src/guards/author.guard';
 import { Content } from 'src/guards/decorators/content.decorator';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreatePlaylistDTO } from './dto';
 
 @Controller('playlist')
 export class PlaylistController {
@@ -22,16 +26,14 @@ export class PlaylistController {
 
   @Get('new')
   async getNewPlaylists(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.playlistService.playlists({
-      ...params,
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -39,31 +41,40 @@ export class PlaylistController {
   @Get('reacted')
   @UseGuards(JWTAuthGuard)
   async getReactedPlaylists(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
     @AuthUser() user: User,
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
-    return this.playlistService.getReactedPlaylist({ userId: user.id, params });
+    const query = {
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
+    };
+
+    return this.playlistService.getReactedPlaylist({
+      userId: user.id,
+      params: query,
+    });
   }
 
   @Post('create')
   @UseGuards(JWTAuthGuard)
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'poster', maxCount: 1 }]))
+  @UseInterceptors(FileInterceptor('poster'))
   async createPlaylist(
-    @UploadedFiles()
-    files: { poster: Express.Multer.File[] },
-    @Body() body: { title: string; genresId: string },
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /^image/ })],
+      }),
+    )
+    poster: Express.Multer.File,
+    @Body() body: CreatePlaylistDTO,
     @AuthUser() user: User,
   ) {
     const data = {
       title: body.title,
       authorId: user.id,
-      poster: files.poster[0],
+      poster: poster,
       genresId: body.genresId.split(',').map((id) => Number(id)) ?? [],
     };
 

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Param,
   Get,
+  Query,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -17,6 +18,7 @@ import { Role } from 'src/guards/decorators/role.decorator';
 import { RoleGuard } from 'src/guards/role.guard';
 import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
+import { ParseFilesPipe } from './validations';
 
 @Controller('track')
 export class TrackController {
@@ -24,16 +26,14 @@ export class TrackController {
 
   @Get('new')
   async getNewTracks(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.trackService.tracks({
-      ...params,
+      take: take,
+      skip: skip,
+      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -41,34 +41,34 @@ export class TrackController {
   @Get('reacted')
   @UseGuards(JWTAuthGuard)
   async getReactedTracks(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
     @AuthUser() user: User,
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
+    const query = {
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
+    };
+
     return this.trackService.getReactedTracks({
       userId: user.id,
-      params: params,
+      params: query,
     });
   }
 
   @Get('playlist/:id')
   async getTracksByPlaylist(
     @Param('id') id: string,
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.trackService.tracks({
-      ...params,
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
       where: {
         playlist: {
@@ -81,16 +81,14 @@ export class TrackController {
   @Get('album/:id')
   async getTracksByAlbum(
     @Param('id') id: string,
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      limit?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ) {
     return this.trackService.tracks({
-      ...params,
+      skip: skip,
+      take: take,
+      cursor: { id: cursorId },
       where: { albumId: Number(id) },
     });
   }
@@ -105,7 +103,7 @@ export class TrackController {
     ]),
   )
   async createTrack(
-    @UploadedFiles()
+    @UploadedFiles(new ParseFilesPipe())
     files: { poster: Express.Multer.File[]; audio: Express.Multer.File[] },
     @Body() body: { title: string; genresId: string },
     @AuthUser() user: User,
@@ -125,12 +123,7 @@ export class TrackController {
   @Role('ARTIST')
   @Content('TRACK')
   @UseGuards(JWTAuthGuard, RoleGuard, AuthorGuard)
-  async deleteTrack(@Param('id') id: string, @AuthUser() user: User) {
-    const activeUser = user;
-
-    return this.trackService.deleteTrack({
-      trackId: Number(id),
-      authorId: activeUser.id,
-    });
+  async deleteTrack(@Param('id') id: string) {
+    return this.trackService.deleteTrack(Number(id));
   }
 }

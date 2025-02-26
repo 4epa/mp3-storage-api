@@ -4,7 +4,6 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTrackDTO, DeleteTrackDTO } from './dto';
 import { FileService } from '../file/file.service';
 import { generateUUID } from 'src/utils/generateUUID';
 import { preprocessingAudioFile } from 'src/utils/ffmpeg/utils';
@@ -61,7 +60,13 @@ export class TrackService {
     return existTrack?.authorId === authorId;
   }
 
-  async createTrack(data: CreateTrackDTO): Promise<Track> {
+  async createTrack(data: {
+    poster: Express.Multer.File;
+    audio: Express.Multer.File;
+    title: string;
+    authorId: number;
+    genresId: number[];
+  }): Promise<Track> {
     const trackUID = generateUUID();
 
     const audioFileKey = `audio-${data.authorId}-${trackUID}`;
@@ -104,17 +109,16 @@ export class TrackService {
     });
   }
 
-  async deleteTrack(data: DeleteTrackDTO) {
-    const existTrack = await this.track({ id: data.trackId });
+  async deleteTrack(id: number) {
+    const existTrack = await this.track({ id });
 
-    if (!existTrack)
-      throw new BadRequestException(ERRORS.noExistTrack(data.trackId));
+    if (!existTrack) throw new BadRequestException(ERRORS.noExistTrack(id));
 
     await this.fileService.remove([existTrack.poster, existTrack.audio]);
 
     return this.prismaService.track.delete({
       where: {
-        id: data.trackId,
+        id: id,
       },
     });
   }
