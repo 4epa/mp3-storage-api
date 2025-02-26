@@ -1,7 +1,19 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { ActiveUserResponseDTO, PublicUserResponseDTO } from './dto';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
+import { AuthUser } from '../auth/auth.decorator';
+import { User } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
@@ -26,20 +38,37 @@ export class UserController {
     return this.userService.users(params);
   }
 
-  @Post('update-user/:id')
+  @Get('all-authors')
+  async getAllAuthors(
+    @Body()
+    params: {
+      skip?: number;
+      take?: number;
+      cursor?: { id: number };
+    },
+  ): Promise<PublicUserResponseDTO[]> {
+    return this.userService.users({ ...params, where: { role: 'ARTIST' } });
+  }
+
+  @Post('update')
+  @UseGuards(JWTAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
   async updateUser(
-    @Param('id') id: string,
-    @Body() input: { name: string; email: string },
+    @Body() input: { nickname: string; email: string },
+    @AuthUser() user: User,
+    @UploadedFile() avatar?: Express.Multer.File,
   ): Promise<ActiveUserResponseDTO> {
     return this.userService.updateUser({
+      avatar: avatar,
       input: input,
-      where: { id: Number(id) },
+      where: { id: user.id, uid: user.uid },
     });
   }
 
-  @Post('delete/:id')
-  async deleteUser(@Param('id') id: string): Promise<ActiveUserResponseDTO> {
-    return this.userService.deleteUser({ id: Number(id) });
+  @Post('delete')
+  @UseGuards(JWTAuthGuard)
+  async deleteUser(@AuthUser() user: User): Promise<ActiveUserResponseDTO> {
+    return this.userService.deleteUser({ id: user.id });
   }
 
   @Get('test')
