@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
   Param,
+  ParseFilePipe,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -19,35 +22,38 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('user-by-id/:id')
+  @Get('user-by-id/:uid')
   async getUser(
-    @Param('id') id: string,
+    @Param('uid') uid: string,
   ): Promise<null | PublicUserResponseDTO> {
-    return this.userService.publicUser({ id: Number(id) });
+    return this.userService.publicUser({ uid: uid });
   }
 
   @Get('all-users')
   async getAllUsers(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      cursor?: { email: string };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ): Promise<PublicUserResponseDTO[]> {
-    return this.userService.users(params);
+    return this.userService.users({
+      take: take,
+      skip: skip,
+      cursor: { id: cursorId },
+    });
   }
 
   @Get('all-authors')
   async getAllAuthors(
-    @Body()
-    params: {
-      skip?: number;
-      take?: number;
-      cursor?: { id: number };
-    },
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+    @Query('cursorId') cursorId?: number,
   ): Promise<PublicUserResponseDTO[]> {
-    return this.userService.users({ ...params, where: { role: 'ARTIST' } });
+    return this.userService.users({
+      take: take,
+      skip: skip,
+      cursor: { id: cursorId },
+      where: { role: 'ARTIST' },
+    });
   }
 
   @Post('update')
@@ -56,7 +62,12 @@ export class UserController {
   async updateUser(
     @Body() input: { nickname: string; email: string },
     @AuthUser() user: User,
-    @UploadedFile() avatar?: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /^image/ })],
+      }),
+    )
+    avatar?: Express.Multer.File,
   ): Promise<ActiveUserResponseDTO> {
     return this.userService.updateUser({
       avatar: avatar,
@@ -69,11 +80,5 @@ export class UserController {
   @UseGuards(JWTAuthGuard)
   async deleteUser(@AuthUser() user: User): Promise<ActiveUserResponseDTO> {
     return this.userService.deleteUser({ id: user.id });
-  }
-
-  @Get('test')
-  @UseGuards(JWTAuthGuard)
-  async test() {
-    return true;
   }
 }

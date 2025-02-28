@@ -1,6 +1,9 @@
+import { IsString } from 'class-validator';
+
 export class CreatePlaylistDTO {
+  @IsString()
   title: string;
-  authorId: number;
-  genresId: number[];
-  poster: Express.Multer.File;
+
+  @IsString()
+  genresId: string;
 }

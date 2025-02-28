@@ -3,6 +3,7 @@ import { ReactionService } from './reaction.service';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
 import { AuthUser } from '../auth/auth.decorator';
 import { User } from '@prisma/client';
+import { ManageReactionDTO } from './dto';
 
 @Controller('reaction')
 export class ReactionController {
@@ -18,12 +19,7 @@ export class ReactionController {
   @UseGuards(JWTAuthGuard)
   async manageReaction(
     @Body()
-    body: {
-      trackId?: number;
-      playlistId?: number;
-      albumId?: number;
-      contentType: 'TRACK' | 'PLAYLIST' | 'ALBUM';
-    },
+    body: ManageReactionDTO,
     @AuthUser() user: User,
   ) {
     return this.reactionService.manageReaction({ ...body, userId: user.id });

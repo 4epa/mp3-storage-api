@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { generateUUID } from 'src/utils/generateUUID';
 import { FileService } from '../file/file.service';
-import { CreatePlaylistDTO } from './dto';
 import { ERRORS } from './errors';
 import { Prisma } from '@prisma/client';
 
@@ -67,7 +66,12 @@ export class PlaylistService {
     }
   }
 
-  async create(data: CreatePlaylistDTO) {
+  async create(data: {
+    title: string;
+    authorId: number;
+    genresId: number[];
+    poster: Express.Multer.File;
+  }) {
     const uid = generateUUID();
 
     const posterFileKey = `playlist-${data.authorId}-${uid}`;
@@ -100,13 +104,5 @@ export class PlaylistService {
     await this.fileService.remove([existPlaylist.poster]);
 
     return this.prismaService.playlist.delete({ where: { id: id } });
-  }
-
-  async checkAuthor(playlistId: number, authorId: number): Promise<boolean> {
-    const existPlaylist = await this.prismaService.playlist.findFirst({
-      where: { id: playlistId },
-    });
-
-    return existPlaylist?.authorId === authorId;
   }
 }

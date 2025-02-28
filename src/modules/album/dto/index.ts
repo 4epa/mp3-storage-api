@@ -1,8 +1,12 @@
+import { IsString } from 'class-validator';
+
 export class CreateAlbumDTO {
+  @IsString()
   title: string;
-  poster: Express.Multer.File;
-  trackAudios: Express.Multer.File[];
+
+  @IsString()
   trackTitles: string;
+
+  @IsString()
   genresId: string;
-  authorId: number;
 }

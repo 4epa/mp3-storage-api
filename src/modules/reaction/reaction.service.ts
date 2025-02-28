@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ManageReactionDTO } from './dto';
 import { generateUUID } from 'src/utils/generateUUID';
 import { Prisma } from '@prisma/client';
 
@@ -12,7 +11,13 @@ export class ReactionService {
     return this.prismaService.reaction.findMany({ ...params });
   }
 
-  async manageReaction(data: ManageReactionDTO) {
+  async manageReaction(data: {
+    userId: number;
+    trackId?: number;
+    albumId?: number;
+    playlistId?: number;
+    contentType: 'PLAYLIST' | 'ALBUM' | 'TRACK';
+  }) {
     const existReaction = await this.prismaService.reaction.findFirst({
       where: {
         userId: data.userId,

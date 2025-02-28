@@ -1,7 +1,15 @@
+import { IsNumber, IsString } from 'class-validator';
+
 export class ManageReactionDTO {
-  userId: number;
+  @IsNumber()
   trackId?: number;
+
+  @IsNumber()
   albumId?: number;
+
+  @IsNumber()
   playlistId?: number;
+
+  @IsString()
   contentType: 'PLAYLIST' | 'ALBUM' | 'TRACK';
 }
