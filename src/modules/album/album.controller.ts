@@ -21,6 +21,7 @@ import { AuthorGuard } from 'src/guards/author.guard';
 import { CreateAlbumDTO } from './dto';
 import { ParseFilesPipe } from './validation';
 import { QueryPaginationDto } from 'src/dto';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('album')
 export class AlbumController {
@@ -81,6 +82,19 @@ export class AlbumController {
 
   @Post('create')
   @Role('ARTIST')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        poster: { type: 'string', format: 'binary' },
+        audios: { type: 'string', format: 'binary' },
+        title: { type: 'string', format: 'text' },
+        genresId: { type: 'string', format: 'text' },
+        trackTitles: { type: 'string', format: 'text' },
+      },
+    },
+  })
   @UseGuards(JWTAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor([

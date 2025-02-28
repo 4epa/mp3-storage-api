@@ -6,6 +6,7 @@ import {
   UseGuards,
   Body,
   Query,
+  Put,
 } from '@nestjs/common';
 import { GenreService } from './genre.service';
 import { Role } from 'src/guards/decorators/role.decorator';
@@ -41,7 +42,7 @@ export class GenreController {
     return this.genreService.create(data.name);
   }
 
-  @Post('update/:id')
+  @Put('update/:id')
   @Role('MODERATOR')
   @UseGuards(JWTAuthGuard, RoleGuard)
   async updateGenre(@Param('id') id: string, @Body() data: CreateGenreDTO) {

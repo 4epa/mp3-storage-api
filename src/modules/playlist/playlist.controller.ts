@@ -20,6 +20,8 @@ import { Content } from 'src/guards/decorators/content.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePlaylistDTO } from './dto';
 import { QueryPaginationDto } from 'src/dto';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { title } from 'process';
 
 @Controller('playlist')
 export class PlaylistController {
@@ -58,6 +60,18 @@ export class PlaylistController {
   }
 
   @Post('create')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      description: 'Create playlist schema',
+      properties: {
+        poster: { type: 'string', format: 'binary' },
+        title: { type: 'string', format: 'text' },
+        genresId: { type: 'string', format: 'text' },
+      },
+    },
+  })
   @UseGuards(JWTAuthGuard)
   @UseInterceptors(FileInterceptor('poster'))
   async createPlaylist(

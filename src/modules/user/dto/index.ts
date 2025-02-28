@@ -1,6 +1,5 @@
 import { Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
-import { isString } from 'class-validator';
 
 export class PublicUserResponseDTO {
   @Expose()

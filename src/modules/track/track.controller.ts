@@ -20,6 +20,8 @@ import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
 import { ParseFilesPipe } from './validations';
 import { QueryPaginationDto } from 'src/dto';
+import { CreateTrackDTO } from './dto';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('track')
 export class TrackController {
@@ -94,6 +96,18 @@ export class TrackController {
 
   @Post('create')
   @Role('ARTIST')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        poster: { type: 'string', format: 'binary' },
+        audio: { type: 'string', format: 'binary' },
+        title: { type: 'string', format: 'text' },
+        genresId: { type: 'string', format: 'text' },
+      },
+    },
+  })
   @UseGuards(JWTAuthGuard, RoleGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -104,7 +118,7 @@ export class TrackController {
   async createTrack(
     @UploadedFiles(new ParseFilesPipe())
     files: { poster: Express.Multer.File[]; audio: Express.Multer.File[] },
-    @Body() body: { title: string; genresId: string },
+    @Body() body: CreateTrackDTO,
     @AuthUser() user: User,
   ) {
     const data = {

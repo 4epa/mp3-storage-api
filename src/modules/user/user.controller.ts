@@ -6,6 +6,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -18,6 +19,7 @@ import { AuthUser } from '../auth/auth.decorator';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QueryPaginationDto } from 'src/dto';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -57,7 +59,19 @@ export class UserController {
     });
   }
 
-  @Post('update')
+  @Put('update')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      description: 'Create playlist schema',
+      properties: {
+        avatar: { type: 'string', format: 'binary' },
+        nickname: { type: 'string', format: 'text' },
+        email: { type: 'string', format: 'text' },
+      },
+    },
+  })
   @UseGuards(JWTAuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUser(
