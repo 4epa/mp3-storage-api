@@ -20,21 +20,20 @@ import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
 import { CreateAlbumDTO } from './dto';
 import { ParseFilesPipe } from './validation';
+import { QueryPaginationDto } from 'src/dto';
 
 @Controller('album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Get('new')
-  async getNewAlbums(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
-  ) {
+  async getNewAlbums(@Query() query: QueryPaginationDto) {
+    const { skip, take, cursorId } = query;
+
     return this.albumService.albums({
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
+      ...(cursorId && { cursor: { id: cursorId } }),
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -43,17 +42,19 @@ export class AlbumController {
   @UseGuards(JWTAuthGuard)
   async getReactedAlbums(
     @AuthUser() user: User,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ) {
+    const { skip, take, cursorId } = query;
+
+    const params = {
+      take: take,
+      skip: skip,
+      ...(cursorId && { cursor: { id: cursorId } }),
+    };
+
     return this.albumService.getReactedAlbums({
       userId: user.id,
-      params: {
-        take: take,
-        skip: skip,
-        cursor: { id: cursorId },
-      },
+      params: params,
     });
   }
 
@@ -64,18 +65,17 @@ export class AlbumController {
 
   @Get('by-author/:id')
   async getAuthorAlbums(
-    @Param('id')
-    id: string,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Param('id') id: string,
+    @Query() query: QueryPaginationDto,
   ) {
+    const { skip, take, cursorId } = query;
+
     return this.albumService.albums({
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
       where: { authorId: Number(id) },
       orderBy: { createdAt: 'desc' },
+      ...(cursorId && { cursor: { id: cursorId } }),
     });
   }
 

@@ -17,6 +17,7 @@ import { JWTAuthGuard } from 'src/guards/auth.guard';
 import { AuthUser } from '../auth/auth.decorator';
 import { User } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { QueryPaginationDto } from 'src/dto';
 
 @Controller('user')
 export class UserController {
@@ -31,28 +32,28 @@ export class UserController {
 
   @Get('all-users')
   async getAllUsers(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ): Promise<PublicUserResponseDTO[]> {
+    const { skip, take, cursorId } = query;
+
     return this.userService.users({
       take: take,
       skip: skip,
-      cursor: { id: cursorId },
+      ...(cursorId && { cursor: { id: cursorId } }),
     });
   }
 
   @Get('all-authors')
   async getAllAuthors(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ): Promise<PublicUserResponseDTO[]> {
+    const { skip, take, cursorId } = query;
+
     return this.userService.users({
       take: take,
       skip: skip,
-      cursor: { id: cursorId },
       where: { role: 'ARTIST' },
+      ...(cursorId && { cursor: { id: cursorId } }),
     });
   }
 

@@ -19,22 +19,21 @@ import { RoleGuard } from 'src/guards/role.guard';
 import { Content } from 'src/guards/decorators/content.decorator';
 import { AuthorGuard } from 'src/guards/author.guard';
 import { ParseFilesPipe } from './validations';
+import { QueryPaginationDto } from 'src/dto';
 
 @Controller('track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
   @Get('new')
-  async getNewTracks(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
-  ) {
+  async getNewTracks(@Query() query: QueryPaginationDto) {
+    const { take, skip, cursorId } = query;
+
     return this.trackService.tracks({
       take: take,
       skip: skip,
-      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
+      ...(cursorId && { cursor: { id: cursorId } }),
     });
   }
 
@@ -42,34 +41,34 @@ export class TrackController {
   @UseGuards(JWTAuthGuard)
   async getReactedTracks(
     @AuthUser() user: User,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ) {
-    const query = {
+    const { take, skip, cursorId } = query;
+
+    const params = {
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
+      ...(cursorId && { cursor: { id: cursorId } }),
     };
 
     return this.trackService.getReactedTracks({
       userId: user.id,
-      params: query,
+      params: params,
     });
   }
 
   @Get('playlist/:id')
   async getTracksByPlaylist(
     @Param('id') id: string,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ) {
+    const { take, skip, cursorId } = query;
+
     return this.trackService.tracks({
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
+      ...(cursorId && { cursor: { id: cursorId } }),
       where: {
         playlist: {
           some: { id: Number(id) },
@@ -81,14 +80,14 @@ export class TrackController {
   @Get('album/:id')
   async getTracksByAlbum(
     @Param('id') id: string,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ) {
+    const { take, skip, cursorId } = query;
+
     return this.trackService.tracks({
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
+      ...(cursorId && { cursor: { id: cursorId } }),
       where: { albumId: Number(id) },
     });
   }

@@ -19,22 +19,21 @@ import { AuthorGuard } from 'src/guards/author.guard';
 import { Content } from 'src/guards/decorators/content.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePlaylistDTO } from './dto';
+import { QueryPaginationDto } from 'src/dto';
 
 @Controller('playlist')
 export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Get('new')
-  async getNewPlaylists(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
-  ) {
+  async getNewPlaylists(@Query() query: QueryPaginationDto) {
+    const { skip, take, cursorId } = query;
+
     return this.playlistService.playlists({
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
       orderBy: { createdAt: 'desc' },
+      ...(cursorId && { cursor: { id: cursorId } }),
     });
   }
 
@@ -42,19 +41,19 @@ export class PlaylistController {
   @UseGuards(JWTAuthGuard)
   async getReactedPlaylists(
     @AuthUser() user: User,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
+    @Query() query: QueryPaginationDto,
   ) {
-    const query = {
+    const { skip, take, cursorId } = query;
+
+    const params = {
       skip: skip,
       take: take,
-      cursor: { id: cursorId },
+      ...{ cursor: { id: cursorId } },
     };
 
     return this.playlistService.getReactedPlaylist({
       userId: user.id,
-      params: query,
+      params: params,
     });
   }
 

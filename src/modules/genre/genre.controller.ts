@@ -12,6 +12,7 @@ import { Role } from 'src/guards/decorators/role.decorator';
 import { JWTAuthGuard } from 'src/guards/auth.guard';
 import { RoleGuard } from 'src/guards/role.guard';
 import { CreateGenreDTO } from './dto';
+import { QueryPaginationDto } from 'src/dto';
 
 @Controller('genre')
 export class GenreController {
@@ -23,12 +24,14 @@ export class GenreController {
   }
 
   @Get('get-many')
-  async getGenres(
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
-    @Query('cursorId') cursorId?: number,
-  ) {
-    return this.genreService.genres({ skip, take, cursor: { id: cursorId } });
+  async getGenres(@Query() query: QueryPaginationDto) {
+    const { skip, take, cursorId } = query;
+
+    return this.genreService.genres({
+      skip,
+      take,
+      ...(cursorId && { cursor: { id: cursorId } }),
+    });
   }
 
   @Post('create')
